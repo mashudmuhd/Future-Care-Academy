@@ -11,14 +11,14 @@
     };
     spinner();
     
-    // Initiate WOW.js for animations
+    // Initiate WOW.js for entrance animations
     if (typeof WOW !== 'undefined') {
         new WOW().init();
     }
 
-    // Sticky Navbar Handler
+    // Sticky Navbar Scroll Elevation
     $(window).scroll(function () {
-        if ($(this).scrollTop() > 100) {
+        if ($(this).scrollTop() > 80) {
             $('.navbar-custom').addClass('shadow-sm').css('background', 'rgba(255, 255, 255, 0.98)');
         } else {
             $('.navbar-custom').removeClass('shadow-sm').css('background', 'rgba(255, 255, 255, 0.95)');
@@ -38,18 +38,60 @@
         return false;
     });
 
-    // Course Program Filter Tabs
-    $('.filter-btn').on('click', function () {
-        $('.filter-btn').removeClass('active');
+    // Animated Numbers Counter on Scroll
+    function animateCounters() {
+        $('.stat-counter-num').each(function () {
+            var $this = $(this);
+            var target = parseInt($this.attr('data-count'), 10);
+            var suffix = $this.attr('data-suffix') || '';
+            var prefix = $this.attr('data-prefix') || '';
+            
+            if (isNaN(target)) return;
+
+            $({ countNum: 0 }).animate({ countNum: target }, {
+                duration: 2000,
+                easing: 'swing',
+                step: function () {
+                    $this.text(prefix + Math.floor(this.countNum) + suffix);
+                },
+                complete: function () {
+                    $this.text(prefix + this.countNum + suffix);
+                }
+            });
+        });
+    }
+
+    var animated = false;
+    $(window).scroll(function () {
+        var statSection = $('.stat-counter-box');
+        if (statSection.length > 0 && !animated) {
+            var oTop = statSection.offset().top - window.innerHeight;
+            if ($(window).scrollTop() > oTop) {
+                animateCounters();
+                animated = true;
+            }
+        }
+    });
+    // Trigger if already in view
+    if ($('.stat-counter-box').length > 0 && $(window).scrollTop() >= 0 && !animated) {
+        setTimeout(function() {
+            animateCounters();
+            animated = true;
+        }, 300);
+    }
+
+    // Course Program Filter Tabs with Smooth Transitions
+    $('.filter-btn-pro').on('click', function () {
+        $('.filter-btn-pro').removeClass('active');
         $(this).addClass('active');
 
         var filterValue = $(this).attr('data-filter');
 
         if (filterValue === 'all') {
-            $('.course-item-col').fadeIn(300);
+            $('.course-item-col').stop().fadeIn(350);
         } else {
-            $('.course-item-col').hide();
-            $('.course-item-col[data-category="' + filterValue + '"]').fadeIn(300);
+            $('.course-item-col').stop().hide();
+            $('.course-item-col[data-category="' + filterValue + '"]').stop().fadeIn(350);
         }
     });
 
@@ -87,28 +129,22 @@
         });
     }
 
-    // Admission Modal Program Preselection
-    $('[data-bs-target="#inquiryModal"]').on('click', function () {
-        var selectedProgram = $(this).attr('data-program');
-        if (selectedProgram) {
-            $('#modalProgramSelect').val(selectedProgram);
-        }
-    });
-
-    // Quick Inquiry Form WhatsApp Generator
-    $('#quickInquiryForm').on('submit', function (e) {
+    // Quick Inquiry Form WhatsApp Link Generator
+    $('#quickInquiryForm, #contactInquiryForm').on('submit', function (e) {
         e.preventDefault();
-        var name = $('#inquiryName').val() || 'Prospective Student';
-        var phone = $('#inquiryPhone').val() || '';
-        var program = $('#modalProgramSelect').val() || 'Degree Programme';
-        var query = $('#inquiryMessage').val() || 'I want to know admission eligibility, fees and syllabus.';
+        var form = $(this);
+        var name = form.find('#inquiryName').val() || 'Prospective Student';
+        var phone = form.find('#inquiryPhone').val() || '';
+        var program = form.find('#modalProgramSelect').val() || 'Online Degree Programme';
+        var query = form.find('#inquiryMessage').val() || 'I want to know admission eligibility, fees and syllabus details.';
 
         var message = "Hello Future Care Institute of Advanced Studies (FIAS),%0A%0A" +
-            "*Admission Inquiry Details:*%0A" +
-            "• *Name:* " + encodeURIComponent(name) + "%0A" +
-            "• *Phone:* " + encodeURIComponent(phone) + "%0A" +
-            "• *Interested Program:* " + encodeURIComponent(program) + "%0A" +
-            "• *Message:* " + encodeURIComponent(query);
+            "*🎓 New Online Admission Inquiry:*%0A" +
+            "• *Candidate Name:* " + encodeURIComponent(name) + "%0A" +
+            "• *WhatsApp / Mobile:* " + encodeURIComponent(phone) + "%0A" +
+            "• *Interested Degree / Program:* " + encodeURIComponent(program) + "%0A" +
+            "• *Inquiry Message:* " + encodeURIComponent(query) + "%0A%0A" +
+            "_Please send me admission eligibility and fee schedule._";
 
         var whatsappUrl = "https://wa.me/+918907087565?text=" + message;
         window.open(whatsappUrl, '_blank');
